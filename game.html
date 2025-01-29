@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Arrow Key Movement</title>
+    <style>
+        canvas {
+            border: 2px solid black;
+            background: #eee;
+        }
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <!-- Add scripts in order -->
+    <script src="map.js"></script>
+    <script src="character.js"></script>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Initialize game map (4x canvas size)
+        const gameMap = new GameMap(1600, 1200);
+        
+        // Initialize character
+        const player = new Character(
+            800,  // start at map center
+            600,
+            30,   // width
+            40    // height
+        );
+
+        // Key state tracking
+        const keys = {
+            ArrowLeft: false,
+            ArrowRight: false,
+            ArrowUp: false,
+            ArrowDown: false
+        };
+
+        // Event listeners for key presses
+        window.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = false;
+            }
+        });
+
+        function update() {
+            player.update(keys, gameMap);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate viewport based on player position
+            const viewportX = player.x + player.width/2 - canvas.width/2;
+            const viewportY = player.y + player.height/2 - canvas.height/2;
+            
+            // Draw map and character with same viewport
+            gameMap.draw(ctx, viewportX, viewportY);
+            player.draw(ctx, viewportX, viewportY);
+        }
+
+        // Main game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        gameLoop();
+    </script>
+</body>
+</html> 
