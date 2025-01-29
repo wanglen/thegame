@@ -26,3 +26,7 @@ git clone https://github.com/yourusername/2d-tile-game.git
 - `map.js` - Map generation and rendering
 - `character.js` - Character logic
 - `README.md` - This documentation
+
+## Recent Changes
+**Collision System Improvements**  
+Fixed an issue where horizontal movement could be blocked when approaching single-tile gaps. The collision system now more accurately calculates entity bounds against tile grid.

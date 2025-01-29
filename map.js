@@ -43,9 +43,9 @@ class GameMap {
     isColliding(x, y, width, height) {
         // Convert to tile coordinates
         const left = Math.floor(x / this.tileSize);
-        const right = Math.floor((x + width) / this.tileSize);
+        const right = Math.floor((x + width - 1) / this.tileSize);
         const top = Math.floor(y / this.tileSize);
-        const bottom = Math.floor((y + height) / this.tileSize);
+        const bottom = Math.floor((y + height - 1) / this.tileSize);
 
         // Check map boundaries
         if (x < 0 || x + width > this.width || y < 0 || y + height > this.height) {
