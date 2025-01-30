@@ -115,8 +115,8 @@ class Character {
     }
 
     handleMonsterCollision(monster, gameMap) {
-        // Cooldown check to prevent oscillation
-        if (this.collisionCooldown.has(monster)) return;
+        // Add dead check at start of method
+        if (this.collisionCooldown.has(monster) || monster.isDead) return;
         
         const dx = monster.x - this.x;
         const dy = monster.y - this.y;
@@ -142,6 +142,7 @@ class Character {
                 monster.y = newY;
                 this.collisionCooldown.add(monster);
                 setTimeout(() => this.collisionCooldown.delete(monster), 100);
+                monster.isDead = true;
                 return;
             }
         }

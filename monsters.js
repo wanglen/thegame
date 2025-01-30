@@ -10,11 +10,18 @@ class Monster {
         this.hue = 0; // Default red hue
         this.eyeColor = '#222';
         this.eyeDirection = { x: 0, y: 0 };
+        this.isDead = false;
     }
 
     draw(ctx, viewportX, viewportY) {
-        // Main body with color variation
-        ctx.fillStyle = `hsl(${360 + this.hue}, 100%, 50%)`;
+        // Change color when dead
+        if (this.isDead) {
+            ctx.fillStyle = '#808080'; // Gray color
+            ctx.strokeStyle = '#333'; // Darker outline
+        } else {
+            ctx.fillStyle = `hsl(${360 + this.hue}, 100%, 50%)`;
+            ctx.strokeStyle = '#600';
+        }
         ctx.fillRect(
             this.x - viewportX,
             this.y - viewportY,
@@ -23,7 +30,6 @@ class Monster {
         );
 
         // Outline to distinguish overlapping
-        ctx.strokeStyle = '#600';
         ctx.lineWidth = 2;
         ctx.strokeRect(
             this.x - viewportX,
@@ -66,6 +72,9 @@ class Monster {
     }
 
     update(playerX, playerY, gameMap) {
+        // Apply speed reduction when dead
+        this.speed = this.isDead ? this.baseSpeed * 0.1 : this.baseSpeed;
+        
         // Store eye direction
         this.eyeDirection.x = playerX - this.x;
         this.eyeDirection.y = playerY - this.y;
@@ -105,7 +114,7 @@ class Monster {
 // Specific monster types
 class Brute extends Monster {
     constructor(x, y) {
-        super(x, y, 40, 40, 'brute');
+        super(x, y, 35, 35, 'brute');
         this.hue = -5; // Darker red
         this.baseSpeed = 1.0;
         this.speed = this.baseSpeed;
@@ -113,11 +122,16 @@ class Brute extends Monster {
     }
 
     draw(ctx, viewportX, viewportY) {
-        ctx.fillStyle = `hsl(${360 + this.hue}, 100%, 30%)`;
+        if (this.isDead) {
+            ctx.fillStyle = '#808080'; // Gray color
+            ctx.strokeStyle = '#333';
+        } else {
+            ctx.fillStyle = `hsl(${360 + this.hue}, 100%, 30%)`;
+            ctx.strokeStyle = '#444';
+        }
         ctx.fillRect(this.x - viewportX, this.y - viewportY, this.width, this.height);
         
         // Armor plates
-        ctx.strokeStyle = '#444';
         ctx.lineWidth = 3;
         ctx.strokeRect(this.x - viewportX + 2, this.y - viewportY + 2, this.width - 4, this.height - 4);
         
@@ -155,9 +169,13 @@ class Creeper extends Monster {
     }
 
     draw(ctx, viewportX, viewportY) {
-        // Flashing body
-        const flash = Math.sin(Date.now()/200) * 10;
-        ctx.fillStyle = `hsl(${120 + flash}, 100%, 50%)`;
+        // Change flashing effect only when alive
+        if (this.isDead) {
+            ctx.fillStyle = '#808080'; // Gray color
+        } else {
+            const flash = Math.sin(Date.now()/200) * 10;
+            ctx.fillStyle = `hsl(${120 + flash}, 100%, 50%)`;
+        }
         ctx.fillRect(this.x - viewportX, this.y - viewportY, this.width, this.height);
         
         // X-shaped eyes

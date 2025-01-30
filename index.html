@@ -80,6 +80,12 @@
             gameMap.draw(ctx, viewportX, viewportY);
             monsterManager.draw(ctx, viewportX, viewportY);
             player.draw(ctx, viewportX, viewportY);
+
+            // Add counter display
+            const aliveCount = monsterManager.monsters.filter(m => !m.isDead).length;
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Remaining monsters: ${aliveCount}`, 10, 30);
         }
 
         // Main game loop
