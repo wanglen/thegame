@@ -1,32 +1,33 @@
-# 2D Tile-Based Game
+# Arrow Key Arena
 
-A simple 2D game with tile-based map and character movement.
+A 2D canvas-based game featuring:
+- Procedurally generated terrain
+- Multiple enemy types
+- Collision detection
+- Dynamic camera following
 
 ## Features
-- WASD/Arrow key movement
-- Collision detection with terrain
-- Smooth camera following
-- Random map generation
-- Character with animations
-
-## Installation
-1. Clone repository: 
-```bash
-git clone https://github.com/yourusername/2d-tile-game.git
-```
-
-2. Open `game.html` in web browser
+- 🕹️ WASD/Arrow key movement
+- 🧱 Random map generation with safe spawn zone
+- 👾 3 unique enemy types with different behaviors
+- 🛑 Collision detection with terrain and enemies
+- 👀 Enemy AI with line-of-sight mechanics
 
 ## Controls
-- Arrow Keys: Move character
-- R: Reset game
+- **Arrow Keys/WASD**: Move character
+- **Shift**: Sprint (if implemented)
 
-## File Structure
-- `game.html` - Main game file
-- `map.js` - Map generation and rendering
-- `character.js` - Character logic
-- `README.md` - This documentation
+## Installation
+1. Clone repo:
+```bash
+git clone https://github.com/yourusername/arrow-key-arena.git
+```
+2. Open in browser:
+```bash
+open index.html
+```
 
-## Recent Changes
-**Collision System Improvements**  
-Fixed an issue where horizontal movement could be blocked when approaching single-tile gaps. The collision system now more accurately calculates entity bounds against tile grid.
+## Changelog
+See [CHANGELOG.md](CHANGELOG.md) for version history
+
+Built with vanilla JavaScript and HTML5 Canvas

@@ -1,12 +1,18 @@
 # Changelog
 
-## [1.0.0] - 2024-02-20
+## [1.1.0] - 2024-03-20
 ### Added
-- Initial game version with:
-  - Tile-based map system
-  - Character movement and collision
-  - Camera following system
-  - Random terrain generation
+- Multiple monster types (Brute, Stalker, Creeper)
+- Monster collision system
+- Character-monster collision handling
+- Visual distinctions between monsters
+
+## [1.0.0] - 2024-03-19
+### Added
+- Initial game release
+- Arrow key movement
+- Procedural map generation
+- Basic monster AI
 
 ## [1.0.1] - 2024-06-20
 ### Fixed
