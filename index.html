@@ -14,10 +14,53 @@
             align-items: center;
             min-height: 100vh;
         }
+        /* Add splash screen styles */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+        }
+        
+        #startButton {
+            padding: 15px 30px;
+            font-size: 24px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        #startButton:hover {
+            background: #45a049;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="splashScreen">
+        <h1 style="font-size: 48px; margin-bottom: 20px;">CRYPT CLASH</h1>
+        <p style="font-size: 24px; margin-bottom: 30px;">Survive the monster onslaught!</p>
+        <button id="startButton">START GAME</button>
+        <div style="position: absolute; bottom: 20px; font-size: 14px;">
+            Use arrow keys to move | Collide with monsters to defeat them
+        </div>
+    </div>
+    
+    <canvas id="gameCanvas" width="800" height="600" class="hidden"></canvas>
     
     <!-- Add scripts in order -->
     <script src="map.js"></script>
@@ -31,8 +74,13 @@
         // Initialize game map (4x canvas size)
         const gameMap = new GameMap(1600, 1200);
         
+        // Modify game state variables
+        let gameRunning = false;
+        let player;
+        let monsterManager;
+
         // Initialize character
-        const player = new Character(
+        player = new Character(
             800,  // start at map center
             600,
             30,   // width
@@ -40,7 +88,7 @@
         );
 
         // Initialize monsters
-        const monsterManager = new MonsterManager(10, gameMap);
+        monsterManager = new MonsterManager(10, gameMap);
 
         // Key state tracking
         const keys = {
@@ -86,17 +134,38 @@
             ctx.fillStyle = 'white';
             ctx.font = '20px Arial';
             ctx.fillText(`Remaining monsters: ${aliveCount}`, 10, 30);
+
+            // Add victory condition check
+            if (aliveCount === 0) {
+                splashScreen.classList.remove('hidden');
+                canvas.classList.add('hidden');
+                gameRunning = false;
+            }
         }
 
         // Main game loop
         function gameLoop() {
+            if (!gameRunning) return;
+            
             update();
             draw();
             requestAnimationFrame(gameLoop);
         }
 
-        // Start the game
-        gameLoop();
+        // Modify game start
+        const splashScreen = document.getElementById('splashScreen');
+        const startButton = document.getElementById('startButton');
+
+        startButton.addEventListener('click', () => {
+            // Reset game state
+            player = new Character(800, 600, 30, 40);
+            monsterManager = new MonsterManager(10, gameMap);
+            
+            splashScreen.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            gameRunning = true;
+            gameLoop();
+        });
     </script>
 </body>
 </html> 
