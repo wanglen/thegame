@@ -40,12 +40,7 @@
         );
 
         // Initialize monsters
-        const monsterManager = new MonsterManager(
-            10,                // number of monsters
-            gameMap.width,     // map width
-            gameMap.height,    // map height
-            gameMap.tileSize   // tile size
-        );
+        const monsterManager = new MonsterManager(10, gameMap);
 
         // Key state tracking
         const keys = {

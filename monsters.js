@@ -40,29 +40,37 @@ class Monster {
 }
 
 class MonsterManager {
-    constructor(numMonsters, mapWidth, mapHeight, tileSize) {
+    constructor(numMonsters, gameMap) {
         this.monsters = [];
-        this.createMonsters(numMonsters, mapWidth, mapHeight, tileSize);
+        this.gameMap = gameMap;
+        this.createMonsters(numMonsters);
     }
 
-    createMonsters(numMonsters, mapWidth, mapHeight, tileSize) {
+    createMonsters(numMonsters) {
+        const tileSize = this.gameMap.tileSize;
+        const monsterSize = 30;
+        
         for (let i = 0; i < numMonsters; i++) {
             let x, y, isValid;
             do {
-                x = Math.random() * (mapWidth - tileSize);
-                y = Math.random() * (mapHeight - tileSize);
-                isValid = !this.isInWall(x, y, tileSize);
+                // Ensure monsters spawn within map boundaries considering their size
+                x = Math.random() * (this.gameMap.width - monsterSize);
+                y = Math.random() * (this.gameMap.height - monsterSize);
+                
+                // Check collision for the entire monster rectangle
+                isValid = !this.gameMap.isColliding(x, y, monsterSize, monsterSize);
+                
+                // Additional check to avoid spawning too close to player (center)
+                const distanceToCenter = Math.hypot(
+                    x - this.gameMap.width/2,
+                    y - this.gameMap.height/2
+                );
+                isValid = isValid && distanceToCenter > 200;
+                
             } while (!isValid);
             
-            this.monsters.push(new Monster(x, y, 30, 30));
+            this.monsters.push(new Monster(x, y, monsterSize, monsterSize));
         }
-    }
-
-    isInWall(x, y, tileSize) {
-        // Convert to tile coordinates and check if it's a wall tile
-        const tileX = Math.floor(x / tileSize);
-        const tileY = Math.floor(y / tileSize);
-        return gameMap.terrain[tileY]?.[tileX] === 1;
     }
 
     draw(ctx, viewportX, viewportY) {
