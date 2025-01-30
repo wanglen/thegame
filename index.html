@@ -54,6 +54,24 @@
     <div id="splashScreen">
         <h1 style="font-size: 48px; margin-bottom: 20px;">CRYPT CLASH</h1>
         <p style="font-size: 24px; margin-bottom: 30px;">Survive the monster onslaught!</p>
+        
+        <!-- Add screen size selector -->
+        <div style="margin: 20px 0;">
+            <label for="screenSize">Screen Size: </label>
+            <select id="screenSize" style="padding: 5px; font-size: 16px;">
+                <option value="800x600">800x600 (Default)</option>
+                <option value="1024x768">1024x768</option>
+                <option value="1280x720">1280x720</option>
+            </select>
+        </div>
+
+        <div style="margin: 10px 0;">
+            <label for="monsterCount">Monster Quantity: </label>
+            <input type="number" id="monsterCount" 
+                   value="10" min="5" max="50" 
+                   style="padding: 5px; font-size: 16px; width: 120px;">
+        </div>
+
         <button id="startButton">START GAME</button>
         <div style="position: absolute; bottom: 20px; font-size: 14px;">
             Use arrow keys to move | Collide with monsters to defeat them
@@ -72,7 +90,7 @@
         const ctx = canvas.getContext('2d');
 
         // Initialize game map (4x canvas size)
-        const gameMap = new GameMap(1600, 1200);
+        let gameMap = new GameMap(1600, 1200);
         
         // Modify game state variables
         let gameRunning = false;
@@ -84,7 +102,7 @@
             800,  // start at map center
             600,
             30,   // width
-            40    // height
+            20    // height
         );
 
         // Initialize monsters
@@ -157,9 +175,25 @@
         const startButton = document.getElementById('startButton');
 
         startButton.addEventListener('click', () => {
-            // Reset game state
-            player = new Character(800, 600, 30, 40);
-            monsterManager = new MonsterManager(10, gameMap);
+            // Get monster count
+            const monsterCount = parseInt(document.getElementById('monsterCount').value) || 10;
+            
+            // Get selected size
+            const size = document.getElementById('screenSize').value.split('x');
+            canvas.width = parseInt(size[0]);
+            canvas.height = parseInt(size[1]);
+            
+            // Reinitialize game map (4x canvas size)
+            gameMap = new GameMap(canvas.width * 4, canvas.height * 4);
+            
+            // Reset game state with new positions
+            player = new Character(
+                gameMap.width / 2,  // center X
+                gameMap.height / 2, // center Y
+                25,   // width
+                29    // height
+            );
+            monsterManager = new MonsterManager(monsterCount, gameMap);
             
             splashScreen.classList.add('hidden');
             canvas.classList.remove('hidden');
