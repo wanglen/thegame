@@ -234,12 +234,19 @@ class MonsterManager {
         this.monsters.forEach(monster => monster.draw(ctx, viewportX, viewportY));
     }
 
-    update(playerX, playerY, gameMap) {
+    update(playerX, playerY, gameMap, player) {
         // First update all monsters' positions
         this.monsters.forEach(monster => monster.update(playerX, playerY, gameMap));
         
-        // Then check and resolve collisions between monsters
+        // Check monster collisions
         this.checkMonsterCollisions(gameMap);
+        
+        // Check player collisions and let player repel monsters
+        this.monsters.forEach(monster => {
+            if (player.checkMonsterCollision(monster)) {
+                player.handleMonsterCollision(monster, gameMap);
+            }
+        });
     }
 
     checkMonsterCollisions(gameMap) {

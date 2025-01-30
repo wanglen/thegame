@@ -6,6 +6,7 @@ class Character {
         this.height = height;
         this.speed = speed;
         this.color = color;
+        this.collisionCooldown = new Set();
     }
 
     update(keys, map) {
@@ -104,5 +105,45 @@ class Character {
             armWidth,
             armHeight
         );
+    }
+
+    checkMonsterCollision(monster) {
+        return this.x < monster.x + monster.width &&
+               this.x + this.width > monster.x &&
+               this.y < monster.y + monster.height &&
+               this.y + this.height > monster.y;
+    }
+
+    handleMonsterCollision(monster, gameMap) {
+        // Cooldown check to prevent oscillation
+        if (this.collisionCooldown.has(monster)) return;
+        
+        const dx = monster.x - this.x;
+        const dy = monster.y - this.y;
+        const direction = Math.atan2(dy, dx);
+        const pushDistance = 5; // Fixed push distance
+
+        // Calculate potential new positions
+        const pushOptions = [
+            { x: Math.cos(direction) * pushDistance, y: Math.sin(direction) * pushDistance }, // Direct push
+            { x: Math.cos(direction + Math.PI/4) * pushDistance, y: Math.sin(direction + Math.PI/4) * pushDistance }, // Diagonal 1
+            { x: Math.cos(direction - Math.PI/4) * pushDistance, y: Math.sin(direction - Math.PI/4) * pushDistance }, // Diagonal 2
+            { x: Math.cos(direction + Math.PI/2) * pushDistance, y: Math.sin(direction + Math.PI/2) * pushDistance }, // Perpendicular 1
+            { x: Math.cos(direction - Math.PI/2) * pushDistance, y: Math.sin(direction - Math.PI/2) * pushDistance }  // Perpendicular 2
+        ];
+
+        // Find first valid push direction
+        for (const push of pushOptions) {
+            const newX = monster.x + push.x;
+            const newY = monster.y + push.y;
+            
+            if (!gameMap.isColliding(newX, newY, monster.width, monster.height)) {
+                monster.x = newX;
+                monster.y = newY;
+                this.collisionCooldown.add(monster);
+                setTimeout(() => this.collisionCooldown.delete(monster), 100);
+                return;
+            }
+        }
     }
 } 

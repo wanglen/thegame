@@ -65,7 +65,7 @@
 
         function update() {
             player.update(keys, gameMap);
-            monsterManager.update(player.x, player.y, gameMap);
+            monsterManager.update(player.x, player.y, gameMap, player);
         }
 
         function draw() {
