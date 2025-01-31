@@ -7,7 +7,9 @@ export class Stalker extends Monster {
         type: 'stalker',
         hue: 5,
         baseSpeed: 2.5,
-        eyeColor: '#FF6B6B'
+        eyeColor: '#FF6B6B',
+        damage: 1.5,
+        attackInterval: 60
     };
 
     constructor(x, y) {

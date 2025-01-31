@@ -6,7 +6,9 @@ export class Creeper extends Monster {
         height: 20,
         type: 'creeper',
         hue: 120,
-        baseSpeed: 1.8
+        baseSpeed: 1.8,
+        damage: 2,
+        attackInterval: 30
     };
 
     constructor(x, y) {

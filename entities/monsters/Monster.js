@@ -6,7 +6,9 @@ export class Monster {
         type: 'monster',
         hue: 0,
         baseSpeed: 1.5,
-        eyeColor: '#222'
+        eyeColor: '#222',
+        damage: 1,  // Base damage per second
+        attackInterval: 60  // 60 frames = 1 second
     };
 
     constructor(x, y, config = {}) {
@@ -22,6 +24,9 @@ export class Monster {
         this.eyeColor = fullConfig.eyeColor;
         this.eyeDirection = { x: 0, y: 0 };
         this.isDead = false;
+        this.damage = fullConfig.damage;
+        this.attackInterval = fullConfig.attackInterval;
+        this.collisionTime = 0;  // Track continuous collision duration
     }
 
     draw(ctx, viewportX, viewportY) {

@@ -7,7 +7,9 @@ export class Brute extends Monster {
         type: 'brute',
         hue: -5,
         baseSpeed: 1.0,
-        health: 3
+        health: 3,
+        damage: 3,
+        attackInterval: 40
     };
 
     constructor(x, y) {

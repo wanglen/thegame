@@ -14,6 +14,15 @@ export class Character {
         this.lastDirection = 'right'; // default
         this.attackProgress = 0; // Tracks animation frame
         this.attackPhases = 3; // Number of animation frames
+        this.health = 100;  // Add health property
+        this._isDead = false;  // Add backing field
+    }
+
+    get isDead() {
+        return this._isDead || this.health <= 0;
+    }
+    set isDead(value) {
+        this._isDead = value;
     }
 
     update(keys, map) {
@@ -204,6 +213,16 @@ export class Character {
                 }
             }
         }
+
+        // Add health bar display (NEW)
+        const canvasWidth = ctx.canvas.width;
+        ctx.fillStyle = '#ff0000'; // Red background
+        ctx.fillRect(canvasWidth - 210, 10, 200, 20);
+        ctx.fillStyle = '#00ff00'; // Green health
+        ctx.fillRect(canvasWidth - 210, 10, (this.health / 100) * 200, 20);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '16px Arial';
+        ctx.fillText(`HP: ${this.health}`, canvasWidth - 200, 28);
     }
 
     checkMonsterCollision(monster) {
