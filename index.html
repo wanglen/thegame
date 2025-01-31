@@ -88,12 +88,12 @@
     
     <div id="gameStatus" class="hidden" aria-live="polite"></div>
     
-    <!-- Add scripts in order -->
-    <script src="map.js"></script>
-    <script src="character.js"></script>
-    <script src="monsters.js"></script>
-    
-    <script>
+    <!-- Update script references -->
+    <script type="module">
+        import { GameMap } from './map.js';
+        import { Character } from './character.js';
+        import { MonsterManager } from './entities/monsters/index.js';
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 

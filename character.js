@@ -1,4 +1,4 @@
-class Character {
+export class Character {
     constructor(x, y, width = 30, height = 40, speed = 5, color = '#00aa00') {
         this.x = x;
         this.y = y;
@@ -12,31 +12,35 @@ class Character {
     update(keys, map) {
         const originalX = this.x;
         const originalY = this.y;
-        let moved = false;
+        let dx = 0, dy = 0;
 
-        // X-axis movement
-        if (keys.ArrowLeft || keys.ArrowRight) {
-            const newX = keys.ArrowLeft ? this.x - this.speed : this.x + this.speed;
+        // Calculate movement vectors first
+        if (keys.ArrowLeft) dx -= this.speed;
+        if (keys.ArrowRight) dx += this.speed;
+        if (keys.ArrowUp) dy -= this.speed;
+        if (keys.ArrowDown) dy += this.speed;
+
+        // Try pure horizontal/vertical movement first
+        if (dx !== 0) {
+            const newX = this.x + dx;
             if (!map.isColliding(newX, this.y, this.width, this.height)) {
                 this.x = newX;
-                moved = true;
+                dx = 0; // Mark axis as handled
             }
         }
-
-        // Y-axis movement
-        if (keys.ArrowUp || keys.ArrowDown) {
-            const newY = keys.ArrowUp ? this.y - this.speed : this.y + this.speed;
+        
+        if (dy !== 0) {
+            const newY = this.y + dy;
             if (!map.isColliding(this.x, newY, this.width, this.height)) {
                 this.y = newY;
-                moved = true;
+                dy = 0; // Mark axis as handled
             }
         }
 
-        // Diagonal movement fallback
-        if (!moved && (keys.ArrowLeft || keys.ArrowRight || keys.ArrowUp || keys.ArrowDown)) {
-            const newX = keys.ArrowLeft ? this.x - this.speed : keys.ArrowRight ? this.x + this.speed : this.x;
-            const newY = keys.ArrowUp ? this.y - this.speed : keys.ArrowDown ? this.y + this.speed : this.y;
-            
+        // Handle remaining movement diagonally
+        if (dx !== 0 || dy !== 0) {
+            const newX = this.x + dx;
+            const newY = this.y + dy;
             if (!map.isColliding(newX, newY, this.width, this.height)) {
                 this.x = newX;
                 this.y = newY;
@@ -115,29 +119,26 @@ class Character {
     }
 
     handleMonsterCollision(monster, gameMap) {
-        // Add cooldown check first
         if (this.collisionCooldown.has(monster) || monster.isDead) return;
 
-        // Calculate direction once
+        // Precompute static directions array once
+        const DIRECTIONS = [0, Math.PI/4, -Math.PI/4, Math.PI/2, -Math.PI/2];
         const angle = Math.atan2(monster.y - this.y, monster.x - this.x);
         const PUSH_DISTANCE = 5;
-        const DIRECTIONS = [
-            0, Math.PI/4, -Math.PI/4, Math.PI/2, -Math.PI/2
-        ];
 
-        // Find valid push direction
-        const validPush = DIRECTIONS.find(dir => {
+        // Use for loop instead of find for better performance
+        for (let i = 0; i < DIRECTIONS.length; i++) {
+            const dir = DIRECTIONS[i];
             const newX = monster.x + Math.cos(angle + dir) * PUSH_DISTANCE;
             const newY = monster.y + Math.sin(angle + dir) * PUSH_DISTANCE;
             
-            return this.isValidPushPosition(newX, newY, monster, gameMap);
-        });
-
-        if (validPush !== undefined) {
-            monster.x += Math.cos(angle + validPush) * PUSH_DISTANCE;
-            monster.y += Math.sin(angle + validPush) * PUSH_DISTANCE;
-            this.addCollisionCooldown(monster);
-            monster.isDead = true;
+            if (this.isValidPushPosition(newX, newY, monster, gameMap)) {
+                monster.x = newX;
+                monster.y = newY;
+                this.addCollisionCooldown(monster);
+                monster.isDead = true;
+                break; // Exit early when found
+            }
         }
     }
 
