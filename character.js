@@ -238,7 +238,6 @@ export class Character {
                 monster.x = newX;
                 monster.y = newY;
                 this.addCollisionCooldown(monster);
-                monster.isDead = true;
                 break; // Exit early when found
             }
         }
