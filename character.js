@@ -7,9 +7,23 @@ export class Character {
         this.speed = speed;
         this.color = color;
         this.collisionCooldown = new Set();
+        this.attackCooldown = 0;
+        this.isAttacking = false;
+        this.attackDuration = 200; // ms
+        this.attackRange = 40;
+        this.lastDirection = 'right'; // default
+        this.attackProgress = 0; // Tracks animation frame
+        this.attackPhases = 3; // Number of animation frames
     }
 
     update(keys, map) {
+        // Track movement direction at the start of update
+        this.lastDirection = 'right'; // default
+        if (keys.ArrowLeft) this.lastDirection = 'left';
+        if (keys.ArrowRight) this.lastDirection = 'right';
+        if (keys.ArrowUp) this.lastDirection = 'up';
+        if (keys.ArrowDown) this.lastDirection = 'down';
+
         const originalX = this.x;
         const originalY = this.y;
         let dx = 0, dy = 0;
@@ -51,6 +65,26 @@ export class Character {
         if (map.isColliding(this.x, this.y, this.width, this.height)) {
             this.x = originalX;
             this.y = originalY;
+        }
+
+        // Handle space bar attack
+        if (keys[' '] && this.attackCooldown <= 0 && !this.isAttacking) {
+            this.isAttacking = true;
+            this.attackProgress = 0;
+            this.attackCooldown = 500;
+            
+            const phaseInterval = this.attackDuration / this.attackPhases;
+            const attackTimer = setInterval(() => {
+                this.attackProgress++;
+                if (this.attackProgress >= this.attackPhases) {
+                    clearInterval(attackTimer);
+                    this.isAttacking = false;
+                }
+            }, phaseInterval);
+            
+            setTimeout(() => {
+                this.attackCooldown = 0;
+            }, this.attackCooldown);
         }
     }
 
@@ -109,6 +143,67 @@ export class Character {
             armWidth,
             armHeight
         );
+
+        // Dynamic sword drawing (MODIFIED)
+        if (this.isAttacking) {
+            const slashAngle = (Math.PI / 4) * (this.attackProgress + 1);
+            const swordLength = this.attackRange;
+            
+            ctx.save();
+            ctx.fillStyle = '#C0C0C0';
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            
+            const centerX = screenX + this.width/2;
+            const centerY = screenY + this.height/2;
+
+            switch(this.lastDirection) {
+                case 'left':
+                    ctx.translate(centerX - swordLength * 0.8, centerY);
+                    ctx.rotate(-slashAngle);
+                    ctx.fillRect(0, -3, swordLength, 6);
+                    ctx.strokeRect(0, -3, swordLength, 6);
+                    break;
+                case 'right':
+                    ctx.translate(centerX + swordLength * 0.2, centerY);
+                    ctx.rotate(slashAngle);
+                    ctx.fillRect(0, -3, swordLength, 6);
+                    ctx.strokeRect(0, -3, swordLength, 6);
+                    break;
+                case 'up':
+                    ctx.translate(centerX, centerY - swordLength * 0.8);
+                    ctx.rotate(-slashAngle);
+                    ctx.fillRect(-3, 0, 6, swordLength);
+                    ctx.strokeRect(-3, 0, 6, swordLength);
+                    break;
+                default: // down
+                    ctx.translate(centerX, centerY + swordLength * 0.2);
+                    ctx.rotate(slashAngle);
+                    ctx.fillRect(-3, 0, 6, swordLength);
+                    ctx.strokeRect(-3, 0, 6, swordLength);
+            }
+            
+            ctx.restore();
+
+            // Add motion trail
+            for(let i = 0; i < this.attackProgress; i++) {
+                ctx.fillStyle = `rgba(192, 192, 192, ${0.3 - (i * 0.1)})`;
+                const offset = i * 3;
+                switch(this.lastDirection) {
+                    case 'left':
+                        ctx.fillRect(centerX - swordLength * 0.8 - offset, centerY - 3, swordLength, 6);
+                        break;
+                    case 'right':
+                        ctx.fillRect(centerX + swordLength * 0.2 + offset, centerY - 3, swordLength, 6);
+                        break;
+                    case 'up':
+                        ctx.fillRect(centerX - 3, centerY - swordLength * 0.8 - offset, 6, swordLength);
+                        break;
+                    default:
+                        ctx.fillRect(centerX - 3, centerY + swordLength * 0.2 + offset, 6, swordLength);
+                }
+            }
+        }
     }
 
     checkMonsterCollision(monster) {
@@ -120,6 +215,13 @@ export class Character {
 
     handleMonsterCollision(monster, gameMap) {
         if (this.collisionCooldown.has(monster) || monster.isDead) return;
+
+        if (this.isAttacking) {
+            // Instant kill when attacking
+            monster.isDead = true;
+            this.addCollisionCooldown(monster);
+            return;
+        }
 
         // Precompute static directions array once
         const DIRECTIONS = [0, Math.PI/4, -Math.PI/4, Math.PI/2, -Math.PI/2];

@@ -121,13 +121,18 @@
             ArrowLeft: false,
             ArrowRight: false,
             ArrowUp: false,
-            ArrowDown: false
+            ArrowDown: false,
+            ' ': false // Add space bar tracking
         };
 
         // Event listeners for key presses
         window.addEventListener('keydown', (e) => {
             if (keys.hasOwnProperty(e.key)) {
                 keys[e.key] = true;
+            }
+            // Prevent space bar from scrolling
+            if (e.key === ' ') {
+                e.preventDefault();
             }
         });
 
