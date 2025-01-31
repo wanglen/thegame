@@ -115,36 +115,42 @@ class Character {
     }
 
     handleMonsterCollision(monster, gameMap) {
-        // Add dead check at start of method
+        // Add cooldown check first
         if (this.collisionCooldown.has(monster) || monster.isDead) return;
-        
-        const dx = monster.x - this.x;
-        const dy = monster.y - this.y;
-        const direction = Math.atan2(dy, dx);
-        const pushDistance = 5; // Fixed push distance
 
-        // Calculate potential new positions
-        const pushOptions = [
-            { x: Math.cos(direction) * pushDistance, y: Math.sin(direction) * pushDistance }, // Direct push
-            { x: Math.cos(direction + Math.PI/4) * pushDistance, y: Math.sin(direction + Math.PI/4) * pushDistance }, // Diagonal 1
-            { x: Math.cos(direction - Math.PI/4) * pushDistance, y: Math.sin(direction - Math.PI/4) * pushDistance }, // Diagonal 2
-            { x: Math.cos(direction + Math.PI/2) * pushDistance, y: Math.sin(direction + Math.PI/2) * pushDistance }, // Perpendicular 1
-            { x: Math.cos(direction - Math.PI/2) * pushDistance, y: Math.sin(direction - Math.PI/2) * pushDistance }  // Perpendicular 2
+        // Calculate direction once
+        const angle = Math.atan2(monster.y - this.y, monster.x - this.x);
+        const PUSH_DISTANCE = 5;
+        const DIRECTIONS = [
+            0, Math.PI/4, -Math.PI/4, Math.PI/2, -Math.PI/2
         ];
 
-        // Find first valid push direction
-        for (const push of pushOptions) {
-            const newX = monster.x + push.x;
-            const newY = monster.y + push.y;
+        // Find valid push direction
+        const validPush = DIRECTIONS.find(dir => {
+            const newX = monster.x + Math.cos(angle + dir) * PUSH_DISTANCE;
+            const newY = monster.y + Math.sin(angle + dir) * PUSH_DISTANCE;
             
-            if (!gameMap.isColliding(newX, newY, monster.width, monster.height)) {
-                monster.x = newX;
-                monster.y = newY;
-                this.collisionCooldown.add(monster);
-                setTimeout(() => this.collisionCooldown.delete(monster), 100);
-                monster.isDead = true;
-                return;
-            }
+            return this.isValidPushPosition(newX, newY, monster, gameMap);
+        });
+
+        if (validPush !== undefined) {
+            monster.x += Math.cos(angle + validPush) * PUSH_DISTANCE;
+            monster.y += Math.sin(angle + validPush) * PUSH_DISTANCE;
+            this.addCollisionCooldown(monster);
+            monster.isDead = true;
         }
+    }
+
+    isValidPushPosition(x, y, monster, gameMap) {
+        return x >= 0 && 
+               y >= 0 &&
+               x + monster.width <= gameMap.width &&
+               y + monster.height <= gameMap.height &&
+               !gameMap.isColliding(x, y, monster.width, monster.height);
+    }
+
+    addCollisionCooldown(monster) {
+        this.collisionCooldown.add(monster);
+        setTimeout(() => this.collisionCooldown.delete(monster), 100);
     }
 } 

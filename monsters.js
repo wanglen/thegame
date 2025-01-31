@@ -221,31 +221,43 @@ class MonsterManager {
     }
 
     createMonsters(numMonsters) {
+        const MAX_ATTEMPTS = 100;
         const types = [Brute, Stalker, Creeper];
         const monsterSize = 30;
         
         for (let i = 0; i < numMonsters; i++) {
-            let x, y, isValid;
+            let attempts = 0;
+            let isValid = false;
+            let x, y;
+            
             do {
-                // Ensure monsters spawn within map boundaries considering their size
+                attempts++;
                 x = Math.random() * (this.gameMap.width - monsterSize);
                 y = Math.random() * (this.gameMap.height - monsterSize);
                 
-                // Check collision for the entire monster rectangle
-                isValid = !this.gameMap.isColliding(x, y, monsterSize, monsterSize);
+                isValid = this.isValidSpawnPosition(x, y, monsterSize);
                 
-                // Additional check to avoid spawning too close to player (center)
-                const distanceToCenter = Math.hypot(
-                    x - this.gameMap.width/2,
-                    y - this.gameMap.height/2
-                );
-                isValid = isValid && distanceToCenter > 200;
-                
-            } while (!isValid);
-            
-            const MonsterType = types[Math.floor(Math.random() * types.length)];
-            this.monsters.push(new MonsterType(x, y));
+            } while (!isValid && attempts < MAX_ATTEMPTS);
+
+            if (isValid) {
+                const MonsterType = types[Math.floor(Math.random() * types.length)];
+                this.monsters.push(new MonsterType(x, y));
+            }
         }
+    }
+
+    isValidSpawnPosition(x, y, size) {
+        const distanceToCenter = Math.hypot(
+            x - this.gameMap.width/2,
+            y - this.gameMap.height/2
+        );
+        
+        return !this.gameMap.isColliding(x, y, size, size) &&
+               distanceToCenter > 200 &&
+               !this.monsters.some(m => 
+                   Math.abs(m.x - x) < size && 
+                   Math.abs(m.y - y) < size
+               );
     }
 
     draw(ctx, viewportX, viewportY) {
@@ -288,26 +300,19 @@ class MonsterManager {
     }
 
     resolveCollision(m1, m2, gameMap) {
-        // Calculate overlap in both axes
-        const overlapX = Math.min(
+        // Add boundary checks
+        const pushX = Math.min(
             m1.x + m1.width - m2.x,
             m2.x + m2.width - m1.x
-        );
+        ) * 0.5;
         
-        const overlapY = Math.min(
+        const pushY = Math.min(
             m1.y + m1.height - m2.y,
             m2.y + m2.height - m1.y
-        );
+        ) * 0.5;
 
-        // Resolve along the smaller overlap axis
-        if (overlapX < overlapY) {
-            const pushX = overlapX * 0.5;
-            m1.adjustPosition(-pushX, 0, gameMap);
-            m2.adjustPosition(pushX, 0, gameMap);
-        } else {
-            const pushY = overlapY * 0.5;
-            m1.adjustPosition(0, -pushY, gameMap);
-            m2.adjustPosition(0, pushY, gameMap);
-        }
+        // Apply push with boundary constraints
+        m1.adjustPosition(-pushX, -pushY, gameMap);
+        m2.adjustPosition(pushX, pushY, gameMap);
     }
 } 
