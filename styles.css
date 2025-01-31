@@ -1,0 +1,122 @@
+/* Base Styles */
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Canvas Styles */
+#gameCanvas {
+    border: 2px solid black;
+    background: #eee;
+}
+
+#gameCanvas:focus {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* Splash Screen */
+#splashScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 1000;
+    gap: 20px;
+}
+
+#splashScreen h1 {
+    font-size: 3.5em;
+    margin-bottom: 0.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#splashScreen p {
+    font-size: 1.5em;
+    margin-bottom: 2em;
+}
+
+/* Game Controls */
+.settings-group {
+    margin: 25px 0;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.settings-group label {
+    font-size: 1.3em;
+    min-width: 200px;
+}
+
+.settings-group select,
+.settings-group input {
+    font-size: 1.2em;
+    padding: 8px 12px;
+    border: 2px solid #4CAF50;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 210px;
+}
+
+.settings-group input[type="number"] {
+    padding: 8px 12px;
+}
+
+.settings-group select:hover,
+.settings-group input:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Controls Hint */
+.controls-hint {
+    position: absolute;
+    bottom: 40px;
+    font-size: 16px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+/* Buttons */
+.button {
+    padding: 15px 40px;
+    font-size: 24px;
+    letter-spacing: 1px;
+    margin-top: 20px;
+    background: #4CAF50;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.button:hover {
+    background: #45a049;
+}
+
+/* Restart Overlay */
+#restartOverlay {
+    position: fixed;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+} 
