@@ -1,13 +1,17 @@
 export class GameMap {
     constructor(width, height) {
-        this.width = width;
-        this.height = height;
         this.tileSize = 40;
+        
+        // Ensure integer number of tiles
+        this.width = Math.floor(width / this.tileSize) * this.tileSize;
+        this.height = Math.floor(height / this.tileSize) * this.tileSize;
+        
+        const tilesWide = this.width / this.tileSize;  // Now guaranteed integer
+        const tilesHigh = this.height / this.tileSize;  // Now guaranteed integer
+        
         this.terrain = [];
         
         // Pre-calculate map dimensions in tiles
-        const tilesWide = width / this.tileSize;
-        const tilesHigh = height / this.tileSize;
         const centerX = tilesWide / 2;
         const centerY = tilesHigh / 2;
         
