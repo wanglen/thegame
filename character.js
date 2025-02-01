@@ -1,15 +1,51 @@
 export class Character {
-    constructor(x, y, width = 30, height = 40, speed = 5, color = '#00aa00') {
+    constructor(x, y, width = 30, height = 40, speed = 5) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.speed = speed;
-        this.color = color;
         this.collisionCooldown = new Set();
+        this.attackCooldown = 0;
+        this.isAttacking = false;
+        this.attackDuration = 200; // ms
+        this.attackRange = 40;
+        this.lastDirection = 'right'; // default
+        this.attackProgress = 0; // Tracks animation frame
+        this.attackPhases = 3; // Number of animation frames
+        this.health = 100;  // Add health property
+        this._isDead = false;  // Add backing field
+        this.isInvulnerable = false;
+        this.originalColor = '#00FF00'; // Bright green
+        this.color = this.originalColor; // Set initial color
+        this.invulnerabilityColor = '#FFD700'; // Golden color
+        this._isInvulnerable = false;
+    }
+
+    get isDead() {
+        return this._isDead || this.health <= 0;
+    }
+    set isDead(value) {
+        this._isDead = value;
+    }
+
+    set isInvulnerable(value) {
+        this._isInvulnerable = value;
+        this.color = value ? this.invulnerabilityColor : this.originalColor;
+    }
+    
+    get isInvulnerable() {
+        return this._isInvulnerable;
     }
 
     update(keys, map) {
+        // Track movement direction at the start of update
+        this.lastDirection = 'right'; // default
+        if (keys.ArrowLeft) this.lastDirection = 'left';
+        if (keys.ArrowRight) this.lastDirection = 'right';
+        if (keys.ArrowUp) this.lastDirection = 'up';
+        if (keys.ArrowDown) this.lastDirection = 'down';
+
         const originalX = this.x;
         const originalY = this.y;
         let dx = 0, dy = 0;
@@ -52,9 +88,35 @@ export class Character {
             this.x = originalX;
             this.y = originalY;
         }
+
+        // Handle space bar attack
+        if (keys[' '] && this.attackCooldown <= 0 && !this.isAttacking) {
+            this.isAttacking = true;
+            this.attackProgress = 0;
+            this.attackCooldown = 500;
+            
+            const phaseInterval = this.attackDuration / this.attackPhases;
+            const attackTimer = setInterval(() => {
+                this.attackProgress++;
+                if (this.attackProgress >= this.attackPhases) {
+                    clearInterval(attackTimer);
+                    this.isAttacking = false;
+                }
+            }, phaseInterval);
+            
+            setTimeout(() => {
+                this.attackCooldown = 0;
+            }, this.attackCooldown);
+        }
     }
 
     draw(ctx, viewportX, viewportY) {
+        // Change color when invulnerable
+        const originalColor = this.color;
+        if (this.isInvulnerable) {
+            this.color = this.invulnerabilityColor;
+        }
+        
         // Convert world coordinates to screen coordinates
         const screenX = this.x - viewportX;
         const screenY = this.y - viewportY;
@@ -109,6 +171,93 @@ export class Character {
             armWidth,
             armHeight
         );
+
+        // Dynamic sword drawing (MODIFIED)
+        if (this.isAttacking) {
+            const slashAngle = (Math.PI / 4) * (this.attackProgress + 1);
+            const swordLength = this.attackRange;
+            
+            ctx.save();
+            ctx.fillStyle = '#C0C0C0';
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            
+            const centerX = screenX + this.width/2;
+            const centerY = screenY + this.height/2;
+
+            switch(this.lastDirection) {
+                case 'left':
+                    ctx.translate(centerX - swordLength * 0.8, centerY);
+                    ctx.rotate(-slashAngle);
+                    ctx.fillRect(0, -3, swordLength, 6);
+                    ctx.strokeRect(0, -3, swordLength, 6);
+                    break;
+                case 'right':
+                    ctx.translate(centerX + swordLength * 0.2, centerY);
+                    ctx.rotate(slashAngle);
+                    ctx.fillRect(0, -3, swordLength, 6);
+                    ctx.strokeRect(0, -3, swordLength, 6);
+                    break;
+                case 'up':
+                    ctx.translate(centerX, centerY - swordLength * 0.8);
+                    ctx.rotate(-slashAngle);
+                    ctx.fillRect(-3, 0, 6, swordLength);
+                    ctx.strokeRect(-3, 0, 6, swordLength);
+                    break;
+                default: // down
+                    ctx.translate(centerX, centerY + swordLength * 0.2);
+                    ctx.rotate(slashAngle);
+                    ctx.fillRect(-3, 0, 6, swordLength);
+                    ctx.strokeRect(-3, 0, 6, swordLength);
+            }
+            
+            ctx.restore();
+
+            // Add motion trail
+            for(let i = 0; i < this.attackProgress; i++) {
+                ctx.fillStyle = `rgba(192, 192, 192, ${0.3 - (i * 0.1)})`;
+                const offset = i * 3;
+                switch(this.lastDirection) {
+                    case 'left':
+                        ctx.fillRect(centerX - swordLength * 0.8 - offset, centerY - 3, swordLength, 6);
+                        break;
+                    case 'right':
+                        ctx.fillRect(centerX + swordLength * 0.2 + offset, centerY - 3, swordLength, 6);
+                        break;
+                    case 'up':
+                        ctx.fillRect(centerX - 3, centerY - swordLength * 0.8 - offset, 6, swordLength);
+                        break;
+                    default:
+                        ctx.fillRect(centerX - 3, centerY + swordLength * 0.2 + offset, 6, swordLength);
+                }
+            }
+        }
+
+        // Health bar with improved styling
+        const healthWidth = (this.health / 100) * this.width;
+        const healthX = this.x - viewportX;
+        const healthY = this.y - viewportY - 15;
+        
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(healthX, healthY, this.width, 6);
+        
+        // Health fill
+        ctx.fillStyle = this.isInvulnerable ? '#888' : '#FF4444';
+        ctx.fillRect(healthX, healthY, healthWidth, 4);
+        
+        // Health text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(
+            `HP: ${Math.round(this.health)}`, 
+            healthX + this.width/2, 
+            healthY - 3
+        );
+        
+        // Reset color
+        this.color = originalColor;
     }
 
     checkMonsterCollision(monster) {
@@ -119,7 +268,18 @@ export class Character {
     }
 
     handleMonsterCollision(monster, gameMap) {
+        // Allow attacking even when invulnerable
         if (this.collisionCooldown.has(monster) || monster.isDead) return;
+
+        if (this.isAttacking) {
+            // Instant kill when attacking (regardless of invulnerability)
+            monster.isDead = true;
+            this.addCollisionCooldown(monster);
+            return;
+        }
+
+        // Only prevent damage when invulnerable
+        if (this.isInvulnerable) return;
 
         // Precompute static directions array once
         const DIRECTIONS = [0, Math.PI/4, -Math.PI/4, Math.PI/2, -Math.PI/2];
@@ -136,7 +296,6 @@ export class Character {
                 monster.x = newX;
                 monster.y = newY;
                 this.addCollisionCooldown(monster);
-                monster.isDead = true;
                 break; // Exit early when found
             }
         }
@@ -153,5 +312,35 @@ export class Character {
     addCollisionCooldown(monster) {
         this.collisionCooldown.add(monster);
         setTimeout(() => this.collisionCooldown.delete(monster), 100);
+    }
+
+    applyLifeEffect() {
+        let blinkCount = 0;
+        const blinkInterval = setInterval(() => {
+            this.color = this.color === this.originalColor ? '#FF0000' : this.originalColor;
+            if (++blinkCount >= 4) {
+                clearInterval(blinkInterval);
+                this.color = this.originalColor;
+            }
+        }, 200);
+    }
+
+    takeDamage(amount) {
+        this.health = Math.max(0, this.health - Math.round(amount));
+        // Round health for display purposes
+        this.displayHealth = Math.round(this.health * 10) / 10; // Keep one decimal for animation
+    }
+
+    drawHealthBar(ctx, viewportX, viewportY) {
+        const roundedHealth = Math.round(this.health);
+        const healthWidth = (roundedHealth / 100) * this.width;
+        
+        // Draw health bar background
+        ctx.fillStyle = '#444';
+        ctx.fillRect(this.x - viewportX, this.y - viewportY - 10, this.width, 5);
+        
+        // Draw current health
+        ctx.fillStyle = this.isInvulnerable ? '#888' : '#FF0000';
+        ctx.fillRect(this.x - viewportX, this.y - viewportY - 10, healthWidth, 5);
     }
 } 

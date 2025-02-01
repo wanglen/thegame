@@ -2,212 +2,52 @@
 <html>
 <head>
     <title>Crypt Clash - Monster Survival Arena</title>
-    <style>
-        canvas {
-            border: 2px solid black;
-            background: #eee;
-        }
-        body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        /* Add splash screen styles */
-        #splashScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 1000;
-        }
-        
-        #startButton {
-            padding: 15px 30px;
-            font-size: 24px;
-            background: #4CAF50;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        
-        #startButton:hover {
-            background: #45a049;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-
-        canvas:focus {
-            outline: 2px solid white;
-            outline-offset: 2px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Splash Screen -->
     <div id="splashScreen">
-        <h1 style="font-size: 48px; margin-bottom: 20px;">CRYPT CLASH</h1>
-        <p style="font-size: 24px; margin-bottom: 30px;">Survive the monster onslaught!</p>
+        <h1>CRYPT CLASH</h1>
+        <p>Survive the monster onslaught!</p>
         
-        <!-- Add screen size selector -->
-        <div style="margin: 20px 0;">
+        <!-- Game Settings -->
+        <div class="settings-group">
             <label for="screenSize">Screen Size: </label>
-            <select id="screenSize" style="padding: 5px; font-size: 16px;">
-                <option value="800x600">800x600 (Default)</option>
-                <option value="1024x768">1024x768</option>
+            <select id="screenSize">
+                <option value="800x600">800x600</option>
+                <option value="1024x768" selected>1024x768 (Default)</option>
                 <option value="1280x720">1280x720</option>
             </select>
         </div>
 
-        <div style="margin: 10px 0;">
+        <div class="settings-group">
             <label for="monsterCount">Monster Quantity: </label>
             <input type="number" id="monsterCount" 
-                   value="10" min="5" max="50" 
-                   style="padding: 5px; font-size: 16px; width: 120px;"
+                   value="20" min="5" max="80"
                    aria-label="Number of monsters to spawn">
         </div>
 
-        <button id="startButton">START GAME</button>
-        <div style="position: absolute; bottom: 20px; font-size: 14px;">
+        <button id="startButton" class="button">START GAME</button>
+        <div class="controls-hint">
             Use arrow keys to move | Collide with monsters to defeat them
         </div>
     </div>
     
-    <canvas id="gameCanvas" width="800" height="600" class="hidden" tabindex="0"></canvas>
-    
+    <!-- Game Elements -->
+    <canvas id="gameCanvas" class="hidden" tabindex="0"></canvas>
     <div id="gameStatus" class="hidden" aria-live="polite"></div>
     
-    <!-- Update script references -->
+    <!-- Restart Overlay -->
+    <div id="restartOverlay" class="hidden">
+        <button id="restartButton" class="button">RESTART</button>
+    </div>
+
     <script type="module">
-        import { GameMap } from './map.js';
-        import { Character } from './character.js';
-        import { MonsterManager } from './entities/monsters/index.js';
-
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Initialize game map (4x canvas size)
-        let gameMap = new GameMap(1600, 1200);
+        // Add cache buster to all script imports
+        const CACHE_BUST = Date.now();
         
-        // Modify game state variables
-        let gameRunning = false;
-        let player;
-        let monsterManager;
-
-        // Initialize character
-        player = new Character(
-            800,  // start at map center
-            600,
-            30,   // width
-            20    // height
-        );
-
-        // Initialize monsters
-        monsterManager = new MonsterManager(10, gameMap);
-
-        // Key state tracking
-        const keys = {
-            ArrowLeft: false,
-            ArrowRight: false,
-            ArrowUp: false,
-            ArrowDown: false
-        };
-
-        // Event listeners for key presses
-        window.addEventListener('keydown', (e) => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = true;
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = false;
-            }
-        });
-
-        function update() {
-            player.update(keys, gameMap);
-            monsterManager.update(player.x, player.y, gameMap, player);
-        }
-
-        function draw() {
-            ctx.fillStyle = '#87CEEB';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Calculate viewport based on player position
-            const viewportX = player.x + player.width/2 - canvas.width/2;
-            const viewportY = player.y + player.height/2 - canvas.height/2;
-            
-            // Draw map and character with same viewport
-            gameMap.draw(ctx, viewportX, viewportY);
-            monsterManager.draw(ctx, viewportX, viewportY);
-            player.draw(ctx, viewportX, viewportY);
-
-            // Add counter display
-            const aliveCount = monsterManager.monsters.filter(m => !m.isDead).length;
-            ctx.fillStyle = 'white';
-            ctx.font = '20px Arial';
-            ctx.fillText(`Remaining monsters: ${aliveCount}`, 10, 30);
-
-            // Add victory condition check
-            if (aliveCount === 0) {
-                splashScreen.classList.remove('hidden');
-                canvas.classList.add('hidden');
-                gameRunning = false;
-            }
-        }
-
-        // Main game loop
-        function gameLoop() {
-            if (!gameRunning) return;
-            
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Modify game start
-        const splashScreen = document.getElementById('splashScreen');
-        const startButton = document.getElementById('startButton');
-
-        startButton.addEventListener('click', () => {
-            // Get monster count
-            const monsterCount = parseInt(document.getElementById('monsterCount').value) || 10;
-            
-            // Get selected size
-            const size = document.getElementById('screenSize').value.split('x');
-            canvas.width = parseInt(size[0]);
-            canvas.height = parseInt(size[1]);
-            
-            // Reinitialize game map (4x canvas size)
-            gameMap = new GameMap(canvas.width * 4, canvas.height * 4);
-            
-            // Reset game state with new positions
-            player = new Character(
-                gameMap.width / 2,  // center X
-                gameMap.height / 2, // center Y
-                25,   // width
-                29    // height
-            );
-            monsterManager = new MonsterManager(monsterCount, gameMap);
-            
-            splashScreen.classList.add('hidden');
-            canvas.classList.remove('hidden');
-            gameRunning = true;
-            gameLoop();
-        });
+        // Load main game script with cache busting
+        import(`./game.js?${CACHE_BUST}`).catch(console.error);
     </script>
 </body>
 </html> 
