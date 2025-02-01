@@ -34,5 +34,5 @@ draw.line((32+11, 11) + (32+21, 21), fill="#80FFFF", width=1)  # Diagonal 1
 draw.line((32+21, 11) + (32+11, 21), fill="#80FFFF", width=1)  # Diagonal 2
 
 # Save to file
-img.save("assets/images/items.png", "PNG")
+img.save("../assets/images/items.png", "PNG")
 print("items.png created with enhanced sprites!")
