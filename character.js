@@ -233,15 +233,28 @@ export class Character {
             }
         }
 
-        // Add health bar display (NEW)
-        const canvasWidth = ctx.canvas.width;
-        ctx.fillStyle = '#ff0000'; // Red background
-        ctx.fillRect(canvasWidth - 210, 10, 200, 20);
-        ctx.fillStyle = '#00ff00'; // Green health
-        ctx.fillRect(canvasWidth - 210, 10, (this.health / 100) * 200, 20);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '16px Arial';
-        ctx.fillText(`HP: ${this.health}`, canvasWidth - 200, 28);
+        // Health bar with improved styling
+        const healthWidth = (this.health / 100) * this.width;
+        const healthX = this.x - viewportX;
+        const healthY = this.y - viewportY - 15;
+        
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(healthX, healthY, this.width, 6);
+        
+        // Health fill
+        ctx.fillStyle = this.isInvulnerable ? '#888' : '#FF4444';
+        ctx.fillRect(healthX, healthY, healthWidth, 4);
+        
+        // Health text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(
+            `HP: ${Math.round(this.health)}`, 
+            healthX + this.width/2, 
+            healthY - 3
+        );
         
         // Reset color
         this.color = originalColor;
@@ -310,5 +323,24 @@ export class Character {
                 this.color = this.originalColor;
             }
         }, 200);
+    }
+
+    takeDamage(amount) {
+        this.health = Math.max(0, this.health - Math.round(amount));
+        // Round health for display purposes
+        this.displayHealth = Math.round(this.health * 10) / 10; // Keep one decimal for animation
+    }
+
+    drawHealthBar(ctx, viewportX, viewportY) {
+        const roundedHealth = Math.round(this.health);
+        const healthWidth = (roundedHealth / 100) * this.width;
+        
+        // Draw health bar background
+        ctx.fillStyle = '#444';
+        ctx.fillRect(this.x - viewportX, this.y - viewportY - 10, this.width, 5);
+        
+        // Draw current health
+        ctx.fillStyle = this.isInvulnerable ? '#888' : '#FF0000';
+        ctx.fillRect(this.x - viewportX, this.y - viewportY - 10, healthWidth, 5);
     }
 } 

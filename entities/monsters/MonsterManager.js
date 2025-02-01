@@ -1,40 +1,50 @@
-import { Brute } from './Brute.js';
-import { Stalker } from './Stalker.js';
-import { Creeper } from './Creeper.js';
+import { Monster } from './Monster.js';
 
 export class MonsterManager {
-    constructor(numMonsters, gameMap) {
+    constructor(numMonsters, gameMap, monsterData) {
         this.monsters = [];
         this.gameMap = gameMap;
+        this.monsterData = monsterData;
         this.createMonsters(numMonsters);
+        this.logSpawnStats();
     }
 
     createMonsters(numMonsters) {
         const MAX_ATTEMPTS = 100;
-        const types = [Brute, Stalker, Creeper];
-        const monsterSize = 30;
+        const monsterTypes = Object.keys(this.monsterData);
+        
         for (let i = 0; i < numMonsters; i++) {
+            const MonsterType = monsterTypes[Math.floor(Math.random() * monsterTypes.length)];
+            const config = this.monsterData[MonsterType];
+            
             let attempts = 0;
             let isValid = false;
             let x, y;
+            
             do {
                 attempts++;
-                x = Math.random() * (this.gameMap.width - monsterSize);
-                y = Math.random() * (this.gameMap.height - monsterSize);
-                isValid = this.isValidSpawnPosition(x, y, monsterSize);
+                x = Math.random() * (this.gameMap.width - config.size[0]);
+                y = Math.random() * (this.gameMap.height - config.size[1]);
+                isValid = this.isValidSpawnPosition(x, y, config.size[0], config.size[1]);
             } while (!isValid && attempts < MAX_ATTEMPTS);
+            
             if (isValid) {
-                const MonsterType = types[Math.floor(Math.random() * types.length)];
-                this.monsters.push(new MonsterType(x, y));
+                this.monsters.push(new Monster(x, y, {
+                    key: MonsterType,
+                    ...config
+                }));
             }
         }
     }
 
-    isValidSpawnPosition(x, y, size) {
+    isValidSpawnPosition(x, y, width, height) {
         const distanceToCenter = Math.hypot(x - this.gameMap.width/2, y - this.gameMap.height/2);
-        return !this.gameMap.isColliding(x, y, size, size) &&
+        return !this.gameMap.isColliding(x, y, width, height) &&
                distanceToCenter > 200 &&
-               !this.monsters.some(m => Math.abs(m.x - x) < size && Math.abs(m.y - y) < size);
+               !this.monsters.some(m => 
+                   Math.abs(m.x - x) < width && 
+                   Math.abs(m.y - y) < height
+               );
     }
 
     draw(ctx, viewportX, viewportY) {
@@ -44,6 +54,14 @@ export class MonsterManager {
     }
 
     update(playerX, playerY, gameMap, player) {
+        const now = Date.now();
+        
+        for (let i = this.monsters.length - 1; i >= 0; i--) {
+            const monster = this.monsters[i];
+            if (monster.isDead && monster.deathTimestamp && now - monster.deathTimestamp > 1000) {
+                this.monsters.splice(i, 1);
+            }
+        }
         for (let i = 0; i < this.monsters.length; i++) {
             const monster = this.monsters[i];
             monster.update(playerX, playerY, gameMap);
@@ -103,5 +121,17 @@ export class MonsterManager {
     get allMonstersDead() {
         return this.monsters.length > 0 && 
                this.monsters.every(m => m.isDead);
+    }
+
+    logSpawnStats() {
+        const spawnCounts = {};
+        this.monsters.forEach(monster => {
+            spawnCounts[monster.type] = (spawnCounts[monster.type] || 0) + 1;
+        });
+        
+        console.log('Monster Spawn Stats:');
+        Object.entries(spawnCounts).forEach(([type, count]) => {
+            console.log(`- ${type}: ${count}`);
+        });
     }
 } 

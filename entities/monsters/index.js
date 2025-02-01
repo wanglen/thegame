@@ -1,5 +1,2 @@
-export * from './Monster.js';
-export * from './Brute.js';
-export * from './Stalker.js';
-export * from './Creeper.js';
-export * from './MonsterManager.js'; 
+export { Monster } from './Monster.js';
+export { MonsterManager } from './MonsterManager.js'; 

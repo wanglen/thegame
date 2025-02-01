@@ -1,7 +1,10 @@
+const CACHE_BUSTER = `?v=${Date.now()}`;
+
+// Use standard import syntax
 import { GameMap } from './map.js';
 import { Character } from './character.js';
-import { MonsterManager } from './entities/monsters/index.js';
-import { ItemManager } from './items.js';
+import { MonsterManager } from './entities/monsters/MonsterManager.js';
+import { ItemManager } from './entities/items/index.js';
 
 // Game State
 let gameRunning = false;
@@ -9,6 +12,8 @@ let player;
 let monsterManager;
 let gameMap;
 let itemManager;
+let monsterData;
+let itemData;
 
 // DOM Elements
 const canvas = document.getElementById('gameCanvas');
@@ -54,9 +59,20 @@ function handleKeyUp(e) {
 }
 
 // Game Initialization
-function initializeGame() {
+async function initializeGame() {
     const size = document.getElementById('screenSize').value.split('x');
     const monsterCount = parseInt(document.getElementById('monsterCount').value) || 10;
+
+    // Load monster data if not already loaded
+    if (!monsterData) {
+        monsterData = await loadMonsterData();
+    }
+
+    // Load item data
+    if (!itemData) {
+        const response = await fetch('assets/data/items.json');
+        itemData = await response.json();
+    }
 
     canvas.width = parseInt(size[0]);
     canvas.height = parseInt(size[1]);
@@ -68,8 +84,13 @@ function initializeGame() {
         25,
         29
     );
-    monsterManager = new MonsterManager(monsterCount, gameMap);
-    itemManager = new ItemManager(gameMap, player);
+    monsterManager = new MonsterManager(monsterCount, gameMap, monsterData);
+    itemManager = new ItemManager(gameMap, player, itemData, monsterCount);
+}
+
+async function loadMonsterData() {
+    const response = await fetch('assets/data/monsters.json');
+    return await response.json();
 }
 
 // Game Loop
@@ -111,9 +132,16 @@ function draw() {
 // UI Rendering
 function drawGameStatus() {
     const aliveCount = monsterManager.monsters.filter(m => !m.isDead).length;
-    ctx.fillStyle = 'white';
-    ctx.font = '20px Arial';
-    ctx.fillText(`Remaining monsters: ${aliveCount}`, 10, 30);
+    
+    // Background panel
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(10, 10, 200, 30);
+    
+    // Text styling
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Monsters Remaining: ${aliveCount}`, 20, 35);
 }
 
 function drawEndgameScreens() {
@@ -138,8 +166,8 @@ function drawEndgameScreens() {
 }
 
 // Game Control Functions
-function startGame() {
-    initializeGame();
+async function startGame() {
+    await initializeGame();
     splashScreen.classList.add('hidden');
     canvas.classList.remove('hidden');
     gameRunning = true;
