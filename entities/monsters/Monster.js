@@ -11,22 +11,37 @@ export class Monster {
         attackInterval: 60  // 60 frames = 1 second
     };
 
-    constructor(x, y, config = {}) {
-        const fullConfig = { ...this.constructor.baseConfig, ...config };
+    constructor(x, y, config) {
         this.x = x;
         this.y = y;
-        this.width = fullConfig.width;
-        this.height = fullConfig.height;
-        this.type = fullConfig.type;
-        this.baseSpeed = fullConfig.baseSpeed;
+        this.type = config.key;
+        this.name = config.name;
+        
+        // Size properties
+        [this.width, this.height] = config.size;
+        this.baseSize = [...config.size];
+        
+        // Color properties
+        this.hue = config.color.hue;
+        this.color = config.color;
+        
+        // Stats
+        this.baseSpeed = config.stats.speed;
         this.speed = this.baseSpeed;
-        this.hue = fullConfig.hue;
-        this.eyeColor = fullConfig.eyeColor;
-        this.eyeDirection = { x: 0, y: 0 };
+        this.maxHealth = config.stats.health;
+        this.health = this.maxHealth;
+        this.damage = config.stats.damage;
+        this.attackInterval = config.stats.attackInterval;
+        
+        // Special behaviors
+        this.behavior = config.behavior || {};
+        this.eyeColor = config.eyeColor || '#222';
+        this.chargeTime = 0;
+        
+        // State
         this.isDead = false;
-        this.damage = fullConfig.damage;
-        this.attackInterval = fullConfig.attackInterval;
-        this.collisionTime = 0;  // Track continuous collision duration
+        this.collisionTime = 0;
+        this.eyeDirection = { x: 0, y: 0 };
     }
 
     draw(ctx, viewportX, viewportY) {
@@ -66,18 +81,55 @@ export class Monster {
     }
 
     update(playerX, playerY, gameMap) {
+        this.handleSpecialBehaviors(playerX, playerY);
+        
+        // Existing movement logic
         this.speed = this.isDead ? this.baseSpeed * 0.1 : this.baseSpeed;
         this.eyeDirection.x = playerX - this.x;
         this.eyeDirection.y = playerY - this.y;
+        
         const dx = playerX - this.x;
         const dy = playerY - this.y;
         const distanceSq = dx * dx + dy * dy;
+        
         if (distanceSq > 0) {
             const distance = Math.sqrt(distanceSq);
             const moveX = (dx / distance) * this.speed;
             const moveY = (dy / distance) * this.speed;
+            
             if (!gameMap.isColliding(this.x + moveX, this.y, this.width, this.height)) this.x += moveX;
             if (!gameMap.isColliding(this.x, this.y + moveY, this.width, this.height)) this.y += moveY;
+        }
+    }
+
+    handleSpecialBehaviors(playerX, playerY) {
+        // Creeper charge behavior
+        if (this.behavior.chargeDistance) {
+            const dx = playerX - this.x;
+            const dy = playerY - this.y;
+            const distanceSq = dx*dx + dy*dy;
+            
+            if (distanceSq < this.behavior.chargeDistance ** 2) {
+                this.chargeTime++;
+                if (this.chargeTime > 60) {
+                    this.speed = this.baseSpeed * this.behavior.chargeSpeedMultiplier;
+                    this.width = this.baseSize[0] * this.behavior.chargeSizeMultiplier;
+                    this.height = this.baseSize[1] * this.behavior.chargeSizeMultiplier;
+                }
+            } else {
+                this.chargeTime = 0;
+                this.speed = this.baseSpeed;
+                this.width = this.baseSize[0];
+                this.height = this.baseSize[1];
+            }
+        }
+
+        // Stalker speed boost behavior
+        if (this.type === 'stalker') {
+            const angleToPlayer = Math.atan2(this.eyeDirection.y, this.eyeDirection.x);
+            const playerFacing = Math.atan2(this.eyeDirection.y, this.eyeDirection.x);
+            const angleDiff = Math.abs(angleToPlayer - playerFacing);
+            this.speed = angleDiff > Math.PI/2 ? this.baseSpeed * 1.5 : this.baseSpeed;
         }
     }
 

@@ -9,6 +9,7 @@ let player;
 let monsterManager;
 let gameMap;
 let itemManager;
+let monsterData;
 
 // DOM Elements
 const canvas = document.getElementById('gameCanvas');
@@ -54,9 +55,14 @@ function handleKeyUp(e) {
 }
 
 // Game Initialization
-function initializeGame() {
+async function initializeGame() {
     const size = document.getElementById('screenSize').value.split('x');
     const monsterCount = parseInt(document.getElementById('monsterCount').value) || 10;
+
+    // Load monster data if not already loaded
+    if (!monsterData) {
+        monsterData = await loadMonsterData();
+    }
 
     canvas.width = parseInt(size[0]);
     canvas.height = parseInt(size[1]);
@@ -68,8 +74,13 @@ function initializeGame() {
         25,
         29
     );
-    monsterManager = new MonsterManager(monsterCount, gameMap);
+    monsterManager = new MonsterManager(monsterCount, gameMap, monsterData);
     itemManager = new ItemManager(gameMap, player);
+}
+
+async function loadMonsterData() {
+    const response = await fetch('assets/data/monsters.json');
+    return await response.json();
 }
 
 // Game Loop
@@ -138,8 +149,8 @@ function drawEndgameScreens() {
 }
 
 // Game Control Functions
-function startGame() {
-    initializeGame();
+async function startGame() {
+    await initializeGame();
     splashScreen.classList.add('hidden');
     canvas.classList.remove('hidden');
     gameRunning = true;

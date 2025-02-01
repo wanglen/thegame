@@ -1,0 +1,42 @@
+{
+    "brute": {
+        "name": "Brute",
+        "color": {"hue": -5, "saturation": 100, "lightness": 30},
+        "size": [35, 35],
+        "stats": {
+            "speed": 1.0,
+            "health": 3,
+            "damage": 3,
+            "attackInterval": 40
+        },
+        "eyeColor": "#222"
+    },
+    "creeper": {
+        "name": "Creeper",
+        "color": {"hue": 120, "saturation": 100, "lightness": 50},
+        "size": [20, 20],
+        "stats": {
+            "speed": 1.8,
+            "health": 2,
+            "damage": 2,
+            "attackInterval": 30
+        },
+        "behavior": {
+            "chargeDistance": 100,
+            "chargeSpeedMultiplier": 3,
+            "chargeSizeMultiplier": 1.2
+        }
+    },
+    "stalker": {
+        "name": "Stalker",
+        "color": {"hue": 5, "saturation": 100, "lightness": 50},
+        "size": [25, 25],
+        "stats": {
+            "speed": 2.5,
+            "health": 2,
+            "damage": 1.5,
+            "attackInterval": 60
+        },
+        "eyeColor": "#FF6B6B"
+    }
+} 
