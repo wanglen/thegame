@@ -13,7 +13,7 @@ The deeper you delve, the more the crypt reforms itself, its layout warping to p
 ## Development Notes
 **This project was developed entirely using AI assistance** 🤖  
 - Primary IDE: [Cursor](https://cursor.sh/)  
-- AI Model: [Deepseek-R1](https://deepseek.com/)  
+- AI Model: [Deepseek-R1](https://www.deepseek.com/)  
 - Development Style: Conversational AI pair programming
 
 ## Features
@@ -56,7 +56,7 @@ Built with vanilla JavaScript and HTML5 Canvas
 
 ![Gameplay Screenshot](assets/images/screenshot.png)
 
-[![Made with AI](https://img.shields.io/badge/Created_with-DeepSeek_R1-9cf?logo=ai&style=flat)](https://deepseek.com)
+[![Made with AI](https://img.shields.io/badge/Created_with-DeepSeek_R1-9cf?logo=ai&style=flat)](https://www.deepseek.com)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Installation Prerequisites
