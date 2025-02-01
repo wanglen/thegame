@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.5.0] - 2025-02-01
+### Added
+- MIT License file
+- Phantom Wraith monster type with wall-phasing ability
+- Item sprite sheet support with diamond and heart sprites
+- Monster spawn statistics display with color-coded counters
+- Cache busting system for game assets
+- Accessibility features for UI elements
+
+### Changed
+- Refactored monster system to use JSON data definitions
+- Updated default screen size to 1024x768
+- Increased maximum monster quantity to 80
+- Improved health bar styling with semi-transparent background
+- Modified item spawning probabilities based on monster density
+- Enhanced monster eye rendering with directional tracking
+- Updated status display with rounded health values
+
+### Fixed
+- Cache invalidation issues with game script imports
+- Monster collision time reset logic
+- Item collision detection accuracy
+- Input handling during invulnerability states
+- Health bar positioning during character movement
+
 ## [1.4.0] - 2025-02-01
 ### Added
 - New item system with sprite sheet support
