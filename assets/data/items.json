@@ -1,0 +1,14 @@
+{
+    "life": {
+        "name": "Life Crystal",
+        "probability": 0.3,
+        "color": "#FF69B4",
+        "effect": "heal"
+    },
+    "invulnerability": {
+        "name": "Aegis Shard",
+        "probability": 0.1,
+        "color": "#00FFFF",
+        "effect": "invulnerability"
+    }
+} 

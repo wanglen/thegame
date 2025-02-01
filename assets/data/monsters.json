@@ -38,5 +38,21 @@
             "attackInterval": 60
         },
         "eyeColor": "#FF6B6B"
+    },
+    "ghost": {
+        "name": "Phantom Wraith",
+        "color": {"hue": 240, "saturation": 50, "lightness": 50},
+        "size": [30, 30],
+        "stats": {
+            "speed": 2.2,
+            "health": 1.5,
+            "damage": 1.8,
+            "attackInterval": 45
+        },
+        "behavior": {
+            "phaseThroughWalls": true,
+            "phaseTransparency": 0.6
+        },
+        "eyeColor": "#8A2BE2"
     }
 } 

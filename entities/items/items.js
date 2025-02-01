@@ -1,36 +1,42 @@
 export class ItemManager {
-    constructor(gameMap, player) {
+    constructor(gameMap, player, itemData) {
         this.gameMap = gameMap;
         this.player = player;
         this.items = [];
         this.maxItems = 10;
         this.spawnInterval = 3000;
-        this.itemTypes = {
-            life: {
-                probability: 0.3,  // Increased probability
-                color: '#FF69B4',
-                effect: (player) => {
-                    player.health = Math.min(100, player.health + 30);
-                    player.applyLifeEffect();
-                }
-            },
-            invulnerability: {
-                probability: 0.1,  // Increased probability
-                color: '#00FFFF',
-                effect: (player) => {
-                    player.isInvulnerable = true;
-                    console.log('[Item] Invulnerability activated');
-                    setTimeout(() => {
-                        player.isInvulnerable = false;
-                        console.log('[Item] Invulnerability ended');
-                    }, 7000);
-                }
-            }
-        };
+        this.itemData = this.processItemData(itemData);
 
         // Initial spawn
         this.trySpawnItem();
         setInterval(() => this.trySpawnItem(), this.spawnInterval);
+    }
+
+    processItemData(rawData) {
+        const effectMap = {
+            heal: (player) => {
+                player.health = Math.min(100, player.health + 30);
+                player.applyLifeEffect();
+            },
+            invulnerability: (player) => {
+                player.isInvulnerable = true;
+                console.log('[Item] Invulnerability activated');
+                setTimeout(() => {
+                    player.isInvulnerable = false;
+                    console.log('[Item] Invulnerability ended');
+                }, 7000);
+            }
+        };
+
+        return Object.fromEntries(
+            Object.entries(rawData).map(([key, config]) => [
+                key,
+                {
+                    ...config,
+                    effect: effectMap[config.effect]
+                }
+            ])
+        );
     }
 
     trySpawnItem() {
@@ -62,11 +68,15 @@ export class ItemManager {
 
     chooseRandomType() {
         const rand = Math.random();
-        return rand <= this.itemTypes.invulnerability.probability ? 
-            {...this.itemTypes.invulnerability, name: 'invulnerability'} :
-            rand <= this.itemTypes.life.probability ? 
-            {...this.itemTypes.life, name: 'life'} : 
-            null;
+        let cumulative = 0;
+        
+        for (const [key, config] of Object.entries(this.itemData)) {
+            cumulative += config.probability;
+            if (rand <= cumulative) {
+                return { ...config, name: key };
+            }
+        }
+        return null;
     }
 
     update(player) {

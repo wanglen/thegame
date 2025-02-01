@@ -6,6 +6,7 @@ export class MonsterManager {
         this.gameMap = gameMap;
         this.monsterData = monsterData;
         this.createMonsters(numMonsters);
+        this.logSpawnStats();
     }
 
     createMonsters(numMonsters) {
@@ -112,5 +113,17 @@ export class MonsterManager {
     get allMonstersDead() {
         return this.monsters.length > 0 && 
                this.monsters.every(m => m.isDead);
+    }
+
+    logSpawnStats() {
+        const spawnCounts = {};
+        this.monsters.forEach(monster => {
+            spawnCounts[monster.type] = (spawnCounts[monster.type] || 0) + 1;
+        });
+        
+        console.log('Monster Spawn Stats:');
+        Object.entries(spawnCounts).forEach(([type, count]) => {
+            console.log(`- ${type}: ${count}`);
+        });
     }
 } 

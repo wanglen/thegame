@@ -311,4 +311,23 @@ export class Character {
             }
         }, 200);
     }
+
+    takeDamage(amount) {
+        this.health = Math.max(0, this.health - Math.round(amount));
+        // Round health for display purposes
+        this.displayHealth = Math.round(this.health * 10) / 10; // Keep one decimal for animation
+    }
+
+    drawHealthBar(ctx, viewportX, viewportY) {
+        const roundedHealth = Math.round(this.health);
+        const healthWidth = (roundedHealth / 100) * this.width;
+        
+        // Draw health bar background
+        ctx.fillStyle = '#444';
+        ctx.fillRect(this.x - viewportX, this.y - viewportY - 10, this.width, 5);
+        
+        // Draw current health
+        ctx.fillStyle = this.isInvulnerable ? '#888' : '#FF0000';
+        ctx.fillRect(this.x - viewportX, this.y - viewportY - 10, healthWidth, 5);
+    }
 } 

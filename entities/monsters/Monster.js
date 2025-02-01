@@ -45,6 +45,10 @@ export class Monster {
     }
 
     draw(ctx, viewportX, viewportY) {
+        if (this.behavior.phaseThroughWalls) {
+            ctx.globalAlpha = this.behavior.phaseTransparency || 0.6;
+        }
+        
         if (this.isDead) {
             ctx.fillStyle = '#808080';
             ctx.strokeStyle = '#333';
@@ -52,10 +56,15 @@ export class Monster {
             ctx.fillStyle = `hsl(${360 + this.hue}, 100%, 50%)`;
             ctx.strokeStyle = '#600';
         }
+        
         ctx.fillRect(this.x - viewportX, this.y - viewportY, this.width, this.height);
         ctx.lineWidth = 2;
         ctx.strokeRect(this.x - viewportX, this.y - viewportY, this.width, this.height);
         this.drawEyes(ctx, viewportX, viewportY);
+        
+        if (this.behavior.phaseThroughWalls) {
+            ctx.globalAlpha = 1.0; // Reset transparency
+        }
     }
 
     drawEyes(ctx, viewportX, viewportY) {
@@ -97,8 +106,14 @@ export class Monster {
             const moveX = (dx / distance) * this.speed;
             const moveY = (dy / distance) * this.speed;
             
-            if (!gameMap.isColliding(this.x + moveX, this.y, this.width, this.height)) this.x += moveX;
-            if (!gameMap.isColliding(this.x, this.y + moveY, this.width, this.height)) this.y += moveY;
+            // Ghost phasing behavior
+            if (this.behavior.phaseThroughWalls) {
+                this.x += moveX;
+                this.y += moveY;
+            } else {
+                if (!gameMap.isColliding(this.x + moveX, this.y, this.width, this.height)) this.x += moveX;
+                if (!gameMap.isColliding(this.x, this.y + moveY, this.width, this.height)) this.y += moveY;
+            }
         }
     }
 

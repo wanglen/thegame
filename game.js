@@ -1,7 +1,7 @@
 import { GameMap } from './map.js';
 import { Character } from './character.js';
 import { MonsterManager } from './entities/monsters/index.js';
-import { ItemManager } from './items.js';
+import { ItemManager } from './entities/items/index.js';
 
 // Game State
 let gameRunning = false;
@@ -10,6 +10,7 @@ let monsterManager;
 let gameMap;
 let itemManager;
 let monsterData;
+let itemData;
 
 // DOM Elements
 const canvas = document.getElementById('gameCanvas');
@@ -64,6 +65,12 @@ async function initializeGame() {
         monsterData = await loadMonsterData();
     }
 
+    // Load item data
+    if (!itemData) {
+        const response = await fetch('assets/data/items.json');
+        itemData = await response.json();
+    }
+
     canvas.width = parseInt(size[0]);
     canvas.height = parseInt(size[1]);
     
@@ -75,7 +82,7 @@ async function initializeGame() {
         29
     );
     monsterManager = new MonsterManager(monsterCount, gameMap, monsterData);
-    itemManager = new ItemManager(gameMap, player);
+    itemManager = new ItemManager(gameMap, player, itemData);
 }
 
 async function loadMonsterData() {
