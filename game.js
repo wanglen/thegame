@@ -1,12 +1,14 @@
 import { GameMap } from './map.js';
 import { Character } from './character.js';
 import { MonsterManager } from './entities/monsters/index.js';
+import { ItemManager } from './items.js';
 
 // Game State
 let gameRunning = false;
 let player;
 let monsterManager;
 let gameMap;
+let itemManager;
 
 // DOM Elements
 const canvas = document.getElementById('gameCanvas');
@@ -67,6 +69,7 @@ function initializeGame() {
         29
     );
     monsterManager = new MonsterManager(monsterCount, gameMap);
+    itemManager = new ItemManager(gameMap, player);
 }
 
 // Game Loop
@@ -82,6 +85,7 @@ function update() {
     if (player.isDead || monsterManager.allMonstersDead) return;
     player.update(keys, gameMap);
     monsterManager.update(player.x, player.y, gameMap, player);
+    itemManager.update(player);
 }
 
 function draw() {
@@ -97,6 +101,7 @@ function draw() {
     gameMap.draw(ctx, viewportX, viewportY);
     monsterManager.draw(ctx, viewportX, viewportY);
     player.draw(ctx, viewportX, viewportY);
+    itemManager.draw(ctx, viewportX, viewportY);
 
     // Draw UI
     drawGameStatus();

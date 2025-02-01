@@ -1,11 +1,10 @@
 export class Character {
-    constructor(x, y, width = 30, height = 40, speed = 5, color = '#00aa00') {
+    constructor(x, y, width = 30, height = 40, speed = 5) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.speed = speed;
-        this.color = color;
         this.collisionCooldown = new Set();
         this.attackCooldown = 0;
         this.isAttacking = false;
@@ -16,6 +15,11 @@ export class Character {
         this.attackPhases = 3; // Number of animation frames
         this.health = 100;  // Add health property
         this._isDead = false;  // Add backing field
+        this.isInvulnerable = false;
+        this.originalColor = '#00FF00'; // Bright green
+        this.color = this.originalColor; // Set initial color
+        this.invulnerabilityColor = '#FFD700'; // Golden color
+        this._isInvulnerable = false;
     }
 
     get isDead() {
@@ -23,6 +27,15 @@ export class Character {
     }
     set isDead(value) {
         this._isDead = value;
+    }
+
+    set isInvulnerable(value) {
+        this._isInvulnerable = value;
+        this.color = value ? this.invulnerabilityColor : this.originalColor;
+    }
+    
+    get isInvulnerable() {
+        return this._isInvulnerable;
     }
 
     update(keys, map) {
@@ -98,6 +111,12 @@ export class Character {
     }
 
     draw(ctx, viewportX, viewportY) {
+        // Change color when invulnerable
+        const originalColor = this.color;
+        if (this.isInvulnerable) {
+            this.color = this.invulnerabilityColor;
+        }
+        
         // Convert world coordinates to screen coordinates
         const screenX = this.x - viewportX;
         const screenY = this.y - viewportY;
@@ -223,6 +242,9 @@ export class Character {
         ctx.fillStyle = '#ffffff';
         ctx.font = '16px Arial';
         ctx.fillText(`HP: ${this.health}`, canvasWidth - 200, 28);
+        
+        // Reset color
+        this.color = originalColor;
     }
 
     checkMonsterCollision(monster) {
@@ -233,14 +255,18 @@ export class Character {
     }
 
     handleMonsterCollision(monster, gameMap) {
+        // Allow attacking even when invulnerable
         if (this.collisionCooldown.has(monster) || monster.isDead) return;
 
         if (this.isAttacking) {
-            // Instant kill when attacking
+            // Instant kill when attacking (regardless of invulnerability)
             monster.isDead = true;
             this.addCollisionCooldown(monster);
             return;
         }
+
+        // Only prevent damage when invulnerable
+        if (this.isInvulnerable) return;
 
         // Precompute static directions array once
         const DIRECTIONS = [0, Math.PI/4, -Math.PI/4, Math.PI/2, -Math.PI/2];
@@ -273,5 +299,16 @@ export class Character {
     addCollisionCooldown(monster) {
         this.collisionCooldown.add(monster);
         setTimeout(() => this.collisionCooldown.delete(monster), 100);
+    }
+
+    applyLifeEffect() {
+        let blinkCount = 0;
+        const blinkInterval = setInterval(() => {
+            this.color = this.color === this.originalColor ? '#FF0000' : this.originalColor;
+            if (++blinkCount >= 4) {
+                clearInterval(blinkInterval);
+                this.color = this.originalColor;
+            }
+        }, 200);
     }
 } 

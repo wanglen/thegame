@@ -51,7 +51,7 @@ export class MonsterManager {
             if (player.checkMonsterCollision(monster)) {
                 player.handleMonsterCollision(monster, gameMap);
                 
-                if (!monster.isDead && !player.isDead) {
+                if (!monster.isDead && !player.isDead && !player.isInvulnerable) {
                     if (monster.collisionTime === 0) {
                         monster.collisionTime = monster.attackInterval - 1;
                     }
