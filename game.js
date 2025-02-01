@@ -104,9 +104,13 @@ function gameLoop() {
 
 function update() {
     if (player.isDead || monsterManager.allMonstersDead) return;
+    
     player.update(keys, gameMap);
     monsterManager.update(player.x, player.y, gameMap, player);
     itemManager.update(player);
+    
+    // Force update spawn counts after monster removal
+    monsterManager.logSpawnStats();
 }
 
 function draw() {
@@ -127,6 +131,7 @@ function draw() {
     // Draw UI
     drawGameStatus();
     drawEndgameScreens();
+    drawSpawnStats();
 }
 
 // UI Rendering
@@ -165,6 +170,19 @@ function drawEndgameScreens() {
     }
 }
 
+// New function to draw spawn stats
+function drawSpawnStats() {
+    const spawnList = document.getElementById('spawnList');
+    const spawnStats = document.getElementById('spawnStats');
+    
+    if (monsterManager?.spawnCounts) {
+        spawnList.innerHTML = monsterManager.logSpawnStats();
+        spawnStats.classList.remove('hidden');
+    } else {
+        spawnStats.classList.add('hidden');
+    }
+}
+
 // Game Control Functions
 async function startGame() {
     await initializeGame();
@@ -173,6 +191,7 @@ async function startGame() {
     gameRunning = true;
     gameLoop();
     restartOverlay.classList.add('hidden');
+    document.getElementById('spawnStats').classList.remove('hidden');
 }
 
 function returnToMenu() {
@@ -180,6 +199,7 @@ function returnToMenu() {
     canvas.classList.add('hidden');
     restartOverlay.classList.add('hidden');
     gameRunning = false;
+    document.getElementById('spawnStats').classList.add('hidden');
 }
 
 // Initial Setup
