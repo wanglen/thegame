@@ -129,9 +129,16 @@ function draw() {
 // UI Rendering
 function drawGameStatus() {
     const aliveCount = monsterManager.monsters.filter(m => !m.isDead).length;
-    ctx.fillStyle = 'white';
-    ctx.font = '20px Arial';
-    ctx.fillText(`Remaining monsters: ${aliveCount}`, 10, 30);
+    
+    // Background panel
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(10, 10, 200, 30);
+    
+    // Text styling
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Monsters Remaining: ${aliveCount}`, 20, 35);
 }
 
 function drawEndgameScreens() {
