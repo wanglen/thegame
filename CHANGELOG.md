@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.4.0] - 2025-02-01
+### Added
+- New item system with sprite sheet support
+- Life Crystal and Aegis Shard items with healing/invulnerability effects
+- Monster JSON data definitions for Brute, Creeper, Stalker, and Phantom Wraith
+- Dynamic health bar display with invulnerability indicators
+- Monster spawn statistics logging
+- Cache busting for game script imports
+- New monster type: Phantom Wraith with wall-phasing ability
+
+### Changed
+- Refactored monster system to use JSON data instead of individual classes
+- Updated default screen size to 1024x768
+- Increased default monster quantity to 20 (max 80)
+- Improved health bar styling with background panel and rounded values
+- Enhanced monster eye rendering with directional tracking
+- Modified item spawning probabilities based on monster count
+- Optimized monster validation checks with size parameters
+- Updated status display styling with semi-transparent background
+
+### Fixed
+- Cache invalidation issues with game assets
+- Monster collision time reset logic
+- Item collision detection accuracy
+- Health bar positioning during character movement
+- Monster deletion timing after death
+- Input handling during invulnerability states
+
 ## [1.3.0] - 2025-01-31
 ### Added
 - Character attack system with sword animations
