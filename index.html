@@ -14,8 +14,8 @@
         <div class="settings-group">
             <label for="screenSize">Screen Size: </label>
             <select id="screenSize">
-                <option value="800x600">800x600 (Default)</option>
-                <option value="1024x768">1024x768</option>
+                <option value="800x600">800x600</option>
+                <option value="1024x768" selected>1024x768 (Default)</option>
                 <option value="1280x720">1280x720</option>
             </select>
         </div>
@@ -23,7 +23,7 @@
         <div class="settings-group">
             <label for="monsterCount">Monster Quantity: </label>
             <input type="number" id="monsterCount" 
-                   value="10" min="5" max="50"
+                   value="20" min="5" max="80"
                    aria-label="Number of monsters to spawn">
         </div>
 
@@ -42,6 +42,12 @@
         <button id="restartButton" class="button">RESTART</button>
     </div>
 
-    <script type="module" src="game.js"></script>
+    <script type="module">
+        // Add cache buster to all script imports
+        const CACHE_BUST = Date.now();
+        
+        // Load main game script with cache busting
+        import(`./game.js?${CACHE_BUST}`).catch(console.error);
+    </script>
 </body>
 </html> 

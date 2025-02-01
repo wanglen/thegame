@@ -1,11 +1,15 @@
 export class ItemManager {
-    constructor(gameMap, player, itemData) {
+    constructor(gameMap, player, itemData, monsterCount) {
         this.gameMap = gameMap;
         this.player = player;
         this.items = [];
-        this.maxItems = 10;
-        this.spawnInterval = 3000;
+        this.monsterCount = monsterCount;
+        this.maxItems = Math.floor(monsterCount * 0.5); // Reduced from 0.75 to 0.5
+        this.spawnInterval = 5000 * (20 / Math.max(monsterCount, 15)); // Increased base interval and divisor
         this.itemData = this.processItemData(itemData);
+
+        this.spriteSheet = new Image();
+        this.spriteSheet.src = 'assets/images/items.png';
 
         // Initial spawn
         this.trySpawnItem();
@@ -45,6 +49,12 @@ export class ItemManager {
         const type = this.chooseRandomType();
         if (!type) return;
 
+        // Check for existing invulnerability items
+        if (type.name === 'invulnerability') {
+            const existingInvuln = this.items.some(item => item.type.name === 'invulnerability');
+            if (existingInvuln) return;
+        }
+
         // Spawn near player's area (same as monster logic)
         const spawnDistance = 300;
         const angle = Math.random() * Math.PI * 2;
@@ -55,25 +65,33 @@ export class ItemManager {
             x: x,
             y: y,
             type: type,
-            width: 20,
-            height: 20
+            width: 32,
+            height: 32
         };
 
         // Ensure valid position
-        if (!this.gameMap.isColliding(x, y, 20, 20)) {
+        if (!this.gameMap.isColliding(x, y, 32, 32)) {
             this.items.push(newItem);
             console.log('[Item] Spawned', type.name, 'at', x.toFixed(0), y.toFixed(0));
         }
     }
 
     chooseRandomType() {
-        const rand = Math.random();
+        const scaledProbs = Object.entries(this.itemData).map(([key, config]) => ({
+            key,
+            probability: config.probability * (key === 'life' ? 
+                Math.min(0.6, 10/this.monsterCount) :  // Tighter limits
+                Math.min(1.2, this.monsterCount/20))  // Reduced scaling
+        }));
+
+        const totalProb = scaledProbs.reduce((sum, curr) => sum + curr.probability, 0);
+        const rand = Math.random() * totalProb;
         let cumulative = 0;
         
-        for (const [key, config] of Object.entries(this.itemData)) {
-            cumulative += config.probability;
+        for (const {key, probability} of scaledProbs) {
+            cumulative += probability;
             if (rand <= cumulative) {
-                return { ...config, name: key };
+                return { ...this.itemData[key], name: key };
             }
         }
         return null;
@@ -103,14 +121,24 @@ export class ItemManager {
             const screenX = item.x - viewportX;
             const screenY = item.y - viewportY;
             
-            // Only draw if visible in viewport
             if (screenX > -50 && screenX < ctx.canvas.width + 50 &&
                 screenY > -50 && screenY < ctx.canvas.height + 50) {
                 
-                ctx.fillStyle = item.type.color;
-                ctx.beginPath();
-                ctx.arc(screenX + 10, screenY + 10, 10, 0, Math.PI * 2);
-                ctx.fill();
+                // Draw using sprite sheet coordinates
+                if (item.type.sprite) {
+                    const [sx, sy, sw, sh] = item.type.sprite.split(',').map(Number);
+                    ctx.drawImage(
+                        this.spriteSheet,
+                        sx, sy, sw, sh,
+                        screenX, screenY, 32, 32
+                    );
+                } else {
+                    // Fallback to colored shape
+                    ctx.fillStyle = item.type.color;
+                    ctx.beginPath();
+                    ctx.arc(screenX + 16, screenY + 16, 16, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         });
     }

@@ -1,6 +1,9 @@
+const CACHE_BUSTER = `?v=${Date.now()}`;
+
+// Use standard import syntax
 import { GameMap } from './map.js';
 import { Character } from './character.js';
-import { MonsterManager } from './entities/monsters/index.js';
+import { MonsterManager } from './entities/monsters/MonsterManager.js';
 import { ItemManager } from './entities/items/index.js';
 
 // Game State
@@ -82,7 +85,7 @@ async function initializeGame() {
         29
     );
     monsterManager = new MonsterManager(monsterCount, gameMap, monsterData);
-    itemManager = new ItemManager(gameMap, player, itemData);
+    itemManager = new ItemManager(gameMap, player, itemData, monsterCount);
 }
 
 async function loadMonsterData() {

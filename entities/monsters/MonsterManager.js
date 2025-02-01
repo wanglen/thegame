@@ -54,6 +54,14 @@ export class MonsterManager {
     }
 
     update(playerX, playerY, gameMap, player) {
+        const now = Date.now();
+        
+        for (let i = this.monsters.length - 1; i >= 0; i--) {
+            const monster = this.monsters[i];
+            if (monster.isDead && monster.deathTimestamp && now - monster.deathTimestamp > 1000) {
+                this.monsters.splice(i, 1);
+            }
+        }
         for (let i = 0; i < this.monsters.length; i++) {
             const monster = this.monsters[i];
             monster.update(playerX, playerY, gameMap);

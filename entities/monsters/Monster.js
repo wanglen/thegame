@@ -42,9 +42,14 @@ export class Monster {
         this.isDead = false;
         this.collisionTime = 0;
         this.eyeDirection = { x: 0, y: 0 };
+        this.deathTime = 0;
+        this.deathTimestamp = null;
     }
 
     draw(ctx, viewportX, viewportY) {
+        if (this.isDead && this.deathTime > 60) { // Changed from 120 to 60 frames (1 second at 60fps)
+            return;
+        }
         if (this.behavior.phaseThroughWalls) {
             ctx.globalAlpha = this.behavior.phaseTransparency || 0.6;
         }
@@ -90,6 +95,10 @@ export class Monster {
     }
 
     update(playerX, playerY, gameMap) {
+        if (this.isDead) {
+            this.deathTime++;
+            return;
+        }
         this.handleSpecialBehaviors(playerX, playerY);
         
         // Existing movement logic
@@ -151,5 +160,13 @@ export class Monster {
     adjustPosition(dx, dy, gameMap) {
         if (!gameMap.isColliding(this.x + dx, this.y, this.width, this.height)) this.x += dx;
         if (!gameMap.isColliding(this.x, this.y + dy, this.width, this.height)) this.y += dy;
+    }
+
+    takeDamage(amount) {
+        this.health -= amount;
+        if (this.health <= 0 && !this.isDead) {
+            this.isDead = true;
+            this.deathTimestamp = Date.now();
+        }
     }
 } 
