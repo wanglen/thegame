@@ -14,4 +14,4 @@ draw.line([(8, 8), (10, 10)], fill=(50, 50, 50), width=1)
 draw.ellipse([13, 13, 15, 15], fill=(231, 76, 60))  # Red accent
 
 # Save as favicon.ico
-img.save('favicon.ico', sizes=[(16,16)])
+img.save('../favicon.ico', sizes=[(16,16)])
