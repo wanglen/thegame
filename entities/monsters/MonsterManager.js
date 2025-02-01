@@ -51,8 +51,11 @@ export class MonsterManager {
             if (player.checkMonsterCollision(monster)) {
                 player.handleMonsterCollision(monster, gameMap);
                 
-                // Only apply damage if player is still alive
                 if (!monster.isDead && !player.isDead) {
+                    if (monster.collisionTime === 0) {
+                        monster.collisionTime = monster.attackInterval - 1;
+                    }
+                    
                     monster.collisionTime++;
                     if (monster.collisionTime >= monster.attackInterval) {
                         player.health = Math.max(0, player.health - monster.damage);
